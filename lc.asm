@@ -14,11 +14,12 @@ EXIT_FAILURE:		equ		1
 
 _start:
 			xor		ebp, ebp
+			sub		rsp, read_buf_size
 
 read_next_block:
 			xor		eax, eax 		; SYS_READ
 			xor		edi, edi		; STDIN_FILENO
-			mov		rsi, read_buf
+			mov		rsi, rsp
 			mov		edx, read_buf_size
 			syscall
 			; rax == 0                   end of file
@@ -30,8 +31,8 @@ read_next_block:
 			jz		eof
 			js		read_error
 
-			lea		rdi, [read_buf + rax]
-			mov		rsi, read_buf
+			lea		rdi, [rsp + rax]
+			mov		rsi, rsp
 
 next_char:
 			cmp		byte [rsi], 10
@@ -81,8 +82,6 @@ read_error:
 			syscall
 
 			section		.bss
-read_buf_size:		equ		8192
-read_buf:		resb		read_buf_size
 
 output_buf_size:	equ		24
 output_buf:		resb		output_buf_size
@@ -90,3 +89,5 @@ output_buf:		resb		output_buf_size
 			section		.rodata
 read_error_msg:		db		"read failed", 10
 read_error_msg_size:	equ		$ - read_error_msg
+
+read_buf_size:		equ		8192
