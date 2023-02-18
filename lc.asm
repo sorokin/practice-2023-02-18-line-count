@@ -46,7 +46,9 @@ dont_increment:
 			jmp		read_next_block
 
 eof:
-			mov		rsi, output_buf + output_buf_size - 1
+			add		rsp, read_buf_size
+
+			lea		rsi, [rsp - 1]
 			mov		byte [rsi], 10
 			mov		rax, rbp
 			mov		rbx, 10
@@ -62,7 +64,7 @@ next_digit:
 
 			mov		eax, SYS_WRITE
 			mov		edi, STDOUT_FILENO
-			mov		rdx, output_buf + output_buf_size
+			mov		rdx, rsp
 			sub		rdx, rsi
 			syscall
 
@@ -80,11 +82,6 @@ read_error:
 			mov		eax, SYS_EXIT
 			mov		edi, EXIT_FAILURE
 			syscall
-
-			section		.bss
-
-output_buf_size:	equ		24
-output_buf:		resb		output_buf_size
 
 			section		.rodata
 read_error_msg:		db		"read failed", 10
